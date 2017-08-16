@@ -40,5 +40,17 @@ namespace HaxkonstDB.Helpers
 			return subdir;
 		}
 
+		internal static bool IsValueType(object obj)
+		{
+			if (obj.GetType().GetTypeInfo().IsValueType) {
+				return true;
+			}
+
+			//treat string as valuetype
+			if (obj is string) {
+				return true;
+			}
+			return false;
+		}
 	}
 }

@@ -4,6 +4,8 @@ using System.IO;
 using HaxkonstDB.Test.Entities;
 using System.Linq;
 using HaxkonstDB.Exceptions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HaxkonstDB.Test
 {
@@ -14,23 +16,18 @@ namespace HaxkonstDB.Test
         private Database databse;
 
         [TestInitialize]
-        public void Init()
-        {
+        public void Init(){
             databse = new Database(dir);
         }
 
         [TestCleanup]
-        public void Cleanup()
-        {
+        public void Cleanup(){
             databse = null;
             Directory.Delete(dir,true);
         }
 
-
-
         [TestMethod]
-        public void SaveObjectTest()
-        {
+        public void SaveObjectTest(){
 
             var car = new Car()
             {
@@ -87,5 +84,46 @@ namespace HaxkonstDB.Test
 
         }
 
-    }
+		[TestMethod]
+		public void SaveSameObjectInMultipleThreads()
+		{
+			var t1 = new Task(()=> {
+				databse.Create(new Car() { Driver = "The stig" });
+			} );
+			var t2 = new Task(() => {
+				databse.Create(new Car() { Driver = "The stig" });
+			});
+			t1.Start();
+			t2.Start();
+
+			Thread.Sleep(50);
+
+			var obj = databse.Find<Car>(x=> x.Driver == "The stig" );
+			Assert.AreEqual(2, obj.Count());
+
+		}
+
+		[DataTestMethod]
+		[DataRow("Lorem ipsum")]
+		[DataRow(123324)]
+		[DataRow((Int64)213423)]
+		[DataRow((String)"Hodor")]
+		[DataRow('g')]
+		[DataRow(243.12)]
+		[DataRow((byte)16)]
+		[ExpectedException(typeof(NonReferenceTypeException))]
+		public void SaveValueType(object obj){
+			databse.Create(obj);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(NonReferenceTypeException))]
+		public void SaveDateTime()
+		{
+			var dt1 = new DateTime(2017, 08, 16);
+			databse.Create(dt1);
+		}
+
+
+	}
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using HaxkonstDB.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace HaxkonstDB.Test
 {
@@ -13,16 +14,16 @@ namespace HaxkonstDB.Test
     public class CreateTest
     {
         private string dir = @"C:\Temp\db-test\savetest\";
-        private Database databse;
+        private Database database;
 
         [TestInitialize]
         public void Init(){
-            databse = new Database(dir);
+            database = new Database(dir);
         }
 
         [TestCleanup]
         public void Cleanup(){
-            databse = null;
+            database = null;
             Directory.Delete(dir,true);
         }
 
@@ -38,12 +39,12 @@ namespace HaxkonstDB.Test
                 LicensePlate = "ADB123"
             };
 
-            var dbObjects = databse.Find<Car>(x => x.Driver == car.Driver);
+            var dbObjects = database.Find<Car>(x => x.Driver == car.Driver);
             Assert.AreEqual(0, dbObjects.Count());
 
-            databse.Create(car);
+            database.Create(car);
 
-            dbObjects = databse.Find<Car>(x => x.Driver == car.Driver);
+            dbObjects = database.Find<Car>(x => x.Driver == car.Driver);
             Assert.AreEqual(1, dbObjects.Count());
         }
 
@@ -57,11 +58,11 @@ namespace HaxkonstDB.Test
                 IsInUse = true
             };
 
-            databse.Create(boat);
+            database.Create(boat);
             boat.IsInUse = false;
-            databse.Create(boat);
+            database.Create(boat);
 
-            var dbObjects = databse.Find<Boat>(x => x.Name == boat.Name);
+            var dbObjects = database.Find<Boat>(x => x.Name == boat.Name);
             Assert.AreEqual(2, dbObjects.Count());
         }
 
@@ -78,8 +79,8 @@ namespace HaxkonstDB.Test
                 LicensePlate = licensPlate
             };
 
-            databse.Create(car);
-            var dbObjects = databse.Find<Car>(x => x.LicensePlate == car.LicensePlate);
+            database.Create(car);
+            var dbObjects = database.Find<Car>(x => x.LicensePlate == car.LicensePlate);
             Assert.AreEqual(car.Driver, dbObjects.First().Driver);
 
         }
@@ -88,10 +89,10 @@ namespace HaxkonstDB.Test
 		public void SaveSameObjectInMultipleThreads()
 		{
 			var t1 = new Task(()=> {
-				databse.Create(new Car() { Driver = "The stig" });
+				database.Create(new Car() { Driver = "The stig" });
 			} );
 			var t2 = new Task(() => {
-				databse.Create(new Car() { Driver = "The stig" });
+				database.Create(new Car() { Driver = "The stig" });
 			});
 			t1.Start();
 			t2.Start();
@@ -99,7 +100,7 @@ namespace HaxkonstDB.Test
 			t1.Wait();
 			t2.Wait();
 
-			var obj = databse.Find<Car>(x=> x.Driver == "The stig" );
+			var obj = database.Find<Car>(x=> x.Driver == "The stig" );
 			Assert.AreEqual(2, obj.Count());
 
 		}
@@ -114,7 +115,7 @@ namespace HaxkonstDB.Test
 		[DataRow((byte)16)]
 		[ExpectedException(typeof(NonReferenceTypeException))]
 		public void SaveValueType(object obj){
-			databse.Create(obj);
+			database.Create(obj);
 		}
 
 		[TestMethod]
@@ -122,9 +123,48 @@ namespace HaxkonstDB.Test
 		public void SaveDateTime()
 		{
 			var dt1 = new DateTime(2017, 08, 16);
-			databse.Create(dt1);
+			database.Create(dt1);
 		}
 
+		[TestMethod]
+		public void SaveValueTypeList()
+		{
+			var dt1 = new List<string>() { "Cat" , "Dog" };
+			database.Create((IEnumerable<string>)dt1);
+
+			var list = database.Find<List<string>>(x => x.Count > 1);
+			Assert.AreEqual("CatDog", string.Join("", dt1));
+		}
+
+		[TestMethod]
+		public void SaveList()
+		{
+			var c1 = new Car() { Driver = "Leaila K" };
+			var c2 = new Car() { Driver = "Tina Turner" };
+
+
+			var dt1 = new List<Car>() { c1,c2 };
+			database.Create(dt1);
+
+			var list = database.Find<List<Car>>(x => x.Count == 2).FirstOrDefault();
+			Assert.AreEqual("Tina Turner", list[1].Driver );
+		}
+
+		[TestMethod]
+		public void SaveObjectWithObjects()
+		{
+			var g = new Garage { Built = DateTime.Parse("2005-04-03"), SquareMeters = 300 };
+			g.Cars.Add(new Car() { Driver = "John Snow", LicensePlate = "asd123" });
+			g.Cars.Add(new Car() { Driver = "The kingslayer", LicensePlate = "qwe123" });
+			g.Cars.Add(new Car() { Driver = "Kalisi", LicensePlate = "dr4gon" });
+
+			database.Create(g);
+
+			var result = database.Find<Garage>(x => x.Built > DateTime.Parse("2000-02-02"));
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual(3, result.First().Cars.Count());
+
+		}
 
 	}
 }

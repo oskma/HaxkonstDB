@@ -37,7 +37,7 @@ namespace HaxkonstDB
                 throw new CreateExistingObjectException("Cannot create object that is already in database");
             }
 
-			if (SerializeHelper.IsValueType(obj)) {
+			if (SerializeHelper.IsNotReferenceType(obj.GetType())) {
 				throw new NonReferenceTypeException("The database dose only support reference types, and not objects of type " + obj.GetType().Name);
 			}
 
@@ -81,6 +81,10 @@ namespace HaxkonstDB
 		/// <param name="p">The query for retriving objects</param>
 		/// <returns>A list of of 0 or more objects of the specified type</returns>
         public IEnumerable<T> Find<T>(Func<T, bool> p) {
+
+			if (SerializeHelper.IsNotReferenceType(typeof(T))) {
+				throw new NonReferenceTypeException("The database dose only support reference types, and not objects of type " + typeof(T).Name);
+			}
 
 			foreach (var file in SerializeHelper.GetTypeDirectory(dir,typeof(T)).GetFiles("*",SearchOption.AllDirectories)) {
 

@@ -40,16 +40,22 @@ namespace HaxkonstDB.Helpers
 			return subdir;
 		}
 
-		internal static bool IsValueType(object obj)
+		internal static bool IsNotReferenceType(Type type)
 		{
-			if (obj.GetType().GetTypeInfo().IsValueType) {
+
+			if (type.GetTypeInfo().IsInterface) {
+				return true;
+			}
+
+			if (type.GetTypeInfo().IsValueType) {
 				return true;
 			}
 
 			//treat string as valuetype
-			if (obj is string) {
+			if (type.Name == "String" ) {//todo: google if there is a better way to this when i get internet
 				return true;
 			}
+
 			return false;
 		}
 	}

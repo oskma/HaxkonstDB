@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace HaxkonstDB.Test
 {
 	[TestClass]
-	public class DeleteTest
+	public class DeleteTests
 	{
 
 		private string dir = @"C:\Temp\db-test\deltetest\";

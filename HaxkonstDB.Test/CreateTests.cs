@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace HaxkonstDB.Test
 {
     [TestClass]
-    public class CreateTest
+    public class CreateTests
     {
         private string dir = @"C:\Temp\db-test\savetest\";
         private Database database;

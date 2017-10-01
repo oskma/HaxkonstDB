@@ -13,7 +13,7 @@ namespace HaxkonstDB.Test
 {
 
     [TestClass]
-    public class UpdateTest
+    public class UpdateTests
     {
 
         private string dir = @"C:\Temp\db-test\updatetest\";

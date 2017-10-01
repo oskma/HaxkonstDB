@@ -10,7 +10,7 @@ using System.Text;
 namespace HaxkonstDB.Test
 {
     [TestClass]
-    public class FindTest
+    public class FindTests
     {
 
         private string dir = @"C:\Temp\db-test\findtest\";

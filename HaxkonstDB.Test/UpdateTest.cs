@@ -124,5 +124,29 @@ namespace HaxkonstDB.Test
 
 		}
 
+		[TestMethod]
+		public void SaveToNewDatabaseInstance()
+		{
+			var car = new Car() {
+				Driver = "Nicke Nyfiken",
+				YearlyMaintancenCost = 200.50M,
+				LicensePlate = "QWE123"
+			};
+
+			databse.Create(car);
+
+			var dbObjects = databse.Find<Car>(x => x.Driver == car.Driver);
+			Assert.AreEqual(1, dbObjects.Count());
+
+			var databse2 = new Database(dir);//new instance
+
+			car.LicensePlate = "ASD456";
+			databse2.Update(car);
+
+			dbObjects = databse2.Find<Car>(x => x.Driver == car.Driver);
+			Assert.AreEqual(1, dbObjects.Count());
+			Assert.AreEqual("ASD456", dbObjects.First().LicensePlate);
+		}
+
 	}
 }

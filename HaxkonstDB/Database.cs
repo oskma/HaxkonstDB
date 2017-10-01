@@ -13,7 +13,7 @@ namespace HaxkonstDB
     public class Database
     {
         private DirectoryInfo dir;
-        private Dictionary<object, string> objDict;
+		private ObjectTracker objectTracker;
 
 		/// <summary>
 		/// Create an instance of the database
@@ -24,8 +24,9 @@ namespace HaxkonstDB
             if (!dir.Exists){
                 dir.Create();
             }
-            objDict = new Dictionary<object, string>();
-        }
+			objectTracker = new ObjectTracker();
+
+		}
 
 		/// <summary>
 		/// Add a new object to the database
@@ -33,7 +34,7 @@ namespace HaxkonstDB
 		/// <param name="obj">The object that should be added</param>
         public void Create(object obj) {
 
-            if (objDict.ContainsKey(obj)) {
+            if (objectTracker.Contains(obj)) {
                 throw new CreateExistingObjectException("Cannot create object that is already in database");
             }
 
@@ -45,7 +46,7 @@ namespace HaxkonstDB
             var filename = Guid.NewGuid().ToString();
 			File.WriteAllText(Path.Combine(SerializeHelper.GetTypeDirectory(dir,obj.GetType()).FullName, filename), str);
 
-            objDict.Add(obj, filename);
+			objectTracker.Insert(obj, filename);
         }
 
 		/// <summary>
@@ -53,12 +54,12 @@ namespace HaxkonstDB
 		/// </summary>
 		/// <param name="obj">An object that has been retrived from the database</param>
         public void Update(object obj) {
-            if (!objDict.ContainsKey(obj)) {
+            if (!objectTracker.Contains(obj)) {
                 throw new UpdateUnexistingObjectException("Cannot update object that is not in database");
             }
-            var key = objDict[obj];
+            var filename = objectTracker.GetFilename(obj);
             var str = SerializeHelper.SerializeObject(obj);
-			File.WriteAllText(Path.Combine(SerializeHelper.GetTypeDirectory(dir,obj.GetType()).FullName, key), str);           
+			File.WriteAllText(Path.Combine(SerializeHelper.GetTypeDirectory(dir,obj.GetType()).FullName, filename), str);           
         }
 
 		/// <summary>
@@ -66,12 +67,12 @@ namespace HaxkonstDB
 		/// </summary>
 		/// <param name="obj">An object that has been retrived from the database</param>
         public void Delete(object obj) {
-            if (!objDict.ContainsKey(obj)) {
+            if (!objectTracker.Contains(obj)) {
                 throw new DeleteUnexistingObjectException("Cannot delete object that is not in database");
             }
-            var key = objDict[obj];
-			File.Delete(Path.Combine(SerializeHelper.GetTypeDirectory(dir,obj.GetType()).FullName, key));
-            objDict.Remove(obj);
+			var filename = objectTracker.GetFilename(obj);
+			File.Delete(Path.Combine(SerializeHelper.GetTypeDirectory(dir,obj.GetType()).FullName, filename));
+			objectTracker.Remove(obj);
         }
 
 		/// <summary>
@@ -96,7 +97,7 @@ namespace HaxkonstDB
                     continue;
                 }
                 if (p((T)obj)) {
-                    objDict.Add(obj, file.Name);
+					objectTracker.Insert(obj, file.Name);
                     yield return (T)obj;
                 }
             }

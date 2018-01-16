@@ -20,7 +20,7 @@ namespace HaxkonstDB.Layers
 		internal abstract void Create(object obj);
 		internal abstract void Update(object obj);
 		internal abstract void Delete(object obj);
-		internal abstract IEnumerable<T> Find<T>(Func<T, bool> p);
+		internal abstract DatabaseResult<T> Find<T>(Func<T, bool> p);
 	}
 
 	

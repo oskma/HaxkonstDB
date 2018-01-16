@@ -45,26 +45,12 @@ namespace HaxkonstDB.Layers
 			objectTracker.Remove(obj);
 		}
 
-		internal override IEnumerable<T> Find<T>(Func<T, bool> p)
+		internal override DatabaseResult<T> Find<T>(Func<T, bool> p)
 		{
 			if (SerializeHelper.IsNotReferenceType(typeof(T))) {
 				throw new NonReferenceTypeException("The database dose only support reference types, and not objects of type " + typeof(T).Name);
 			}
-
-			foreach (var file in SerializeHelper.GetTypeDirectory(dir, typeof(T)).GetFiles("*", SearchOption.AllDirectories)) {
-
-				Type fileType = Type.GetType(file.Directory.Name, true);
-
-				var obj = SerializeHelper.DeserializeObject(File.ReadAllText(file.FullName), fileType);
-
-				if (!(obj is T)) {
-					continue;
-				}
-				if (p((T)obj)) {
-					objectTracker.Insert(obj, file.Name);
-					yield return (T)obj;
-				}
-			}
+			return new DatabaseResult<T>(dir,p);
 		}
 
 		internal override void Update(object obj)

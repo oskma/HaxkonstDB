@@ -19,7 +19,8 @@ namespace HaxkonstDB
             if (!dir.Exists){
                 dir.Create();
             }	
-			dataHandler = new CacheLayer(new IndexLayer(new DataLayer(dir, null)));
+			//dataHandler = new CacheLayer(new IndexLayer(new DataLayer(dir, null)));
+			dataHandler = new DataLayer(dir, null);
 		}
 
 		internal Database(LayerBase layer){
@@ -56,7 +57,7 @@ namespace HaxkonstDB
 		/// <typeparam name="T">The type of object that should be searched</typeparam>
 		/// <param name="p">The query for retriving objects</param>
 		/// <returns>A list of of 0 or more objects of the specified type</returns>
-        public IEnumerable<T> Find<T>(Func<T, bool> p) {
+        public DatabaseResult<T> Find<T>(Func<T, bool> p) {
 			return dataHandler.Find(p);
         }
     }

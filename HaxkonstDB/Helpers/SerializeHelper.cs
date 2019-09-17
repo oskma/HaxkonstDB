@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -6,15 +6,15 @@ using System.Text;
 
 namespace HaxkonstDB.Helpers
 {
-    internal static class SerializeHelper
-    {
-        internal static string SerializeObject(object obj) { 
-            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
-        } 
+	internal static class SerializeHelper
+	{
+		internal static string SerializeObject(object obj) { 
+			return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+		} 
 
-        internal static object DeserializeObject(string str, Type type) {
+		internal static object DeserializeObject(string str, Type type) {
 			return Newtonsoft.Json.JsonConvert.DeserializeObject(str, type);
-        }
+		}
 
 		internal static string FolderName(Type t){
 			var assemblieName = t.GetTypeInfo().Assembly.GetName().Name;
